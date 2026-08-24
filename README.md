@@ -1,17 +1,19 @@
 # HGGAN: A Hierarchical Graph Generative Adversarial Framework for Urban Land Use Planning
 
-This repository contains the code for **HGGAN**, a hierarchical graph generative adversarial framework for conditional urban land use planning. HGGAN models an urban grid as a spatial graph and follows a coarse-to-fine generation pipeline: a coarse generator captures macro-scale structure, while a fine generator refines local allocation using coupled convolutional and graph-based reasoning.
+This repository contains the implementation of **HGGAN**, a hierarchical graph generative adversarial framework for instruction-guided urban land use planning. HGGAN formulates land use configuration as a conditional graph generation problem and adopts a coarse-to-fine architecture to jointly model local spatial structure and long-range functional dependencies.
 
 ![HGGAN framework](./HGGAN_architecture.png)
 
 ## Overview
 
-Urban land use planning is a multi-objective problem that must balance accessibility, livability, sustainability, and spatial coherence. Prior generative approaches are largely raster-based, which makes it harder to model long-range spatial dependencies and often leaves evaluation overly focused on distribution matching. HGGAN addresses these issues by combining:
+Urban land use planning requires balancing multiple and often competing objectives, including spatial accessibility, functional balance, environmental quality, and urban resilience. Existing deep generative approaches commonly represent urban layouts as raster grids and rely primarily on convolutional architectures. While effective at capturing local spatial regularity, these approaches provide limited support for modeling long-range relationships such as functional complementarity, transportation connectivity, and land use compatibility across distant locations. Evaluation presents a second challenge. Distributional similarity alone does not determine whether a generated plan is coherent from a planning perspective: two plans with similar land use proportions may differ substantially in spatial fragmentation, service accessibility, environmental exposure, functional balance, or resilience. 
 
-- **Graph-native spatial modeling** over a discretized urban grid
-- **Hierarchical coarse-to-fine generation** for macro structure and local refinement
-- **Dual-stream fine refinement** with convolutional and functional graph reasoning
-- **Comprehensive evaluation** using distribution metrics, rule-based urban planning dimensions, and uncertainty-aware LLM assessment
+HGGAN addresses these limitations through:
+
+- **Region graph formulation** of urban land use configuration
+- **Hierarchical coarse-to-fine generation** for macro-scale structure and detailed allocation
+- **Dual-stream fine refinement** for local spatial regularity and long-range functional dependencies
+- **Comprehensive evaluation protocol** combining distributional metrics, interpretable planning indicators, and uncertainty-aware LLM assessment
 
 ## Main Ideas
 
@@ -21,10 +23,10 @@ The target region is represented as a grid graph, where each cell is a node and 
 ### 2. Hierarchical generation
 HGGAN uses a two-stage generator:
 
-- **Coarse generator**: predicts macro-scale signals including global intensity, road probability, and latent zoning structure
-- **Fine generator**: produces detailed POI allocation using a dual-stream design that combines local spatial refinement and functional graph interactions
+- **Coarse generator**: predicts macro-scale signals including development intensity, road probability, and latent zoning assignment
+- **Fine generator**: transforms the coarse planning structure into detailed node-level land use distributions
 
-### 3. Multi-layer evaluation
+### 3. Three-layer evaluation
 The evaluation protocol combines three complementary views:
 
 - **Distribution-based metrics** such as KL / JS / Hellinger / Cosine / Wasserstein distributional distances
@@ -39,7 +41,7 @@ The evaluation protocol combines three complementary views:
 
 ## Data
 
-The dataset is not included in this repository at this stage. A later update will provide the releasable data package and instructions for organization.
+The dataset is not included in this repository at current stage. A later update will provide the releasable data package and instructions for organization.
 
 ## Environment
 A Conda environment specification is provided. A typical setup is:
@@ -52,7 +54,7 @@ pip install -r requirements.txt
 
 ## Training
 
-Example training command for the anchor-based functional backend:
+Example training command using the anchor-based functional stream:
 
 ```bash
 python train.py \
@@ -63,11 +65,11 @@ python train.py \
   --anchor_key_dim 32
 ```
 
-This stage trains the hierarchical generator and saves checkpoints under the specified output directory.
+The training stage optimizes the hierarchical generator together with the conditional adversarial objective and saves checkpoints under the specified output directory.
 
 ## Generation
 
-After training, generate plans from the trained checkpoint:
+After training, generate land use plans from a trained checkpoint:
 
 ```bash
 python generate.py \
@@ -80,7 +82,7 @@ python generate.py \
 
 ## Evaluation
 
-### 1) Distribution-based metrics + urban planning 6 dimensions
+### 1) Distributional fidelity and planning quality
 
 ```bash
 python evaluate_generated_plans.py \
@@ -94,9 +96,9 @@ python evaluate_generated_plans.py \
   --save_all
 ```
 
-This computes quantitative distribution metrics and the six selected urban planning dimensions.
+This evaluates generated plans using the distributional metrics and six planning-quality dimensions described above.
 
-### 2) LLM evaluation with uncertainty
+### 2) Uncertainty-aware LLM evaluation
 
 ```bash
 python robust_llm_evaluator.py \
@@ -110,6 +112,6 @@ python robust_llm_evaluator.py \
   --verbose
 ```
 
-This samples generated plans, evaluates each plan multiple times, and aggregates uncertainty-aware semantic scores across the six selected planning dimensions.
+This samples generated plans, evaluates each plan repeatedly, and aggregates dimension-level semantic scores, confidence values, and inter-run uncertainty.
 
 
