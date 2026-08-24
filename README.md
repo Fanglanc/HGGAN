@@ -6,7 +6,7 @@ This repository contains the implementation of **HGGAN**, a hierarchical graph g
 
 ## Overview
 
-Urban land use planning requires balancing multiple and often competing objectives, including spatial accessibility, functional balance, environmental quality, and urban resilience. Existing deep generative approaches commonly represent urban layouts as raster grids and rely primarily on convolutional architectures. While effective at capturing local spatial regularity, these approaches provide limited support for modeling long-range relationships such as functional complementarity, transportation connectivity, and land use compatibility across distant locations. Evaluation presents a second challenge. Distributional similarity alone does not determine whether a generated plan is coherent from a planning perspective: two plans with similar land use proportions may differ substantially in spatial fragmentation, service accessibility, environmental exposure, functional balance, or resilience. 
+Urban land use planning requires balancing multiple and often competing objectives, including spatial accessibility, functional balance, environmental quality, and urban resilience. Existing deep generative approaches commonly represent urban layouts as raster grids and rely primarily on convolutional architectures. While effective at capturing local spatial regularity, these approaches provide limited support for modeling long-range relationships such as functional complementarity, transportation connectivity, and land use compatibility across distant locations. Evaluation presents a second challenge. Distributional similarity alone does not determine whether a generated plan is coherent from a planning perspective: two plans with similar land use proportions may differ substantially in spatial organization, service accessibility, environmental exposure, functional balance, or resilience. 
 
 HGGAN addresses these limitations through:
 
@@ -16,36 +16,72 @@ HGGAN addresses these limitations through:
 - **Multi-objective training** integrating local, global, structural, and adversarial supervision
 - **Comprehensive evaluation protocol** combining distributional metrics, interpretable planning indicators, and uncertainty-aware LLM assessment
 
-## Main Components
+## Architecture
 
-### 1. Graph-native conditional urban planning
-The target region is represented as a grid graph, where each cell is a node and node features represent POI composition. This lets the model explicitly capture non-local relationships through message passing instead of relying only on local convolutional texture.
+### Coarse Graph Generator
 
-### 2. Hierarchical generation
-HGGAN uses a two-stage generator:
+The coarse generator uses graph message passing and positional encoding to predict:
 
-- **Coarse generator**: predicts macro-scale signals including development intensity, road probability, and latent zoning assignment
-- **Fine generator**: transforms the coarse planning structure into detailed node-level land use distributions
+- Development intensity
+- Road probability
+- Latent zoning structure
 
-### 3. Three-layer evaluation
-The evaluation protocol combines three complementary views:
+These representations establish the global planning structure before fine-scale generation.
 
-- **Distribution-based metrics** such as KL / JS / Hellinger / Cosine / Wasserstein distributional distances
-- **Rule-based urban planning scores** summarized into 6 selected dimensions:
-  - Spatial Coherence
-  - Development Compactness
-  - Healthy Environment
-  - Land Use Balance
-  - Community Convenience
-  - Urban Resilience
-- **Uncertainty-aware LLM evaluation** with repeated runs to quantify semantic assessment variability
+### Fine Dual-Stream Generator
+
+The fine generator combines two branches:
+
+- **Spatial stream:** convolutional refinement for local neighborhood consistency
+- **Functional stream:** anchor-based graph message passing for long-range dependencies between functionally similar areas
+
+Bidirectional cross-attention and a mixture gate fuse the two streams before generating node-level land use distributions.
+
+### Conditional Discriminator
+
+A conditional Wasserstein discriminator encourages generated plans to be spatially realistic and consistent with the surrounding urban context and planning requirements.
+
+## Training Objective
+
+HGGAN combines four losses:
+
+- **Reconstruction loss** for local land use assignment
+- **KL regularization** for global land use composition
+- **Road prior** for circulation structure
+- **Adversarial loss** for higher-order spatial realism
+
+The adversarial term uses learnable uncertainty weighting to reduce unstable critic feedback during training.
+
+## Evaluation
+
+HGGAN uses three complementary evaluation layers:
+
+1. **Distributional fidelity**
+   - KL divergence
+   - JS divergence
+   - Hellinger distance
+   - Cosine distance
+   - Wasserstein distance
+
+2. **Six planning-quality dimensions**
+   - Spatial Coherence
+   - Development Compactness
+   - Healthy Environment
+   - Land Use Balance
+   - Community Convenience
+   - Urban Resilience
+
+3. **Uncertainty-aware LLM evaluation**
+   - Repeated semantic assessment
+   - Dimension-level scores
+   - Confidence and inter-run variability
 
 ## Data
 
 The dataset is not included in this repository at current stage. A later update will provide the releasable data package and instructions for organization.
 
+
 ## Environment
-A Conda environment specification is provided. A typical setup is:
 
 ```bash
 conda create -n hggan python=3.10 -y
@@ -54,8 +90,6 @@ pip install -r requirements.txt
 ```
 
 ## Training
-
-Example training command using the anchor-based functional stream:
 
 ```bash
 python train.py \
@@ -66,11 +100,7 @@ python train.py \
   --anchor_key_dim 32
 ```
 
-The training stage optimizes the hierarchical generator together with the conditional adversarial objective and saves checkpoints under the specified output directory.
-
 ## Generation
-
-After training, generate land use plans from a trained checkpoint:
 
 ```bash
 python generate.py \
@@ -83,7 +113,7 @@ python generate.py \
 
 ## Evaluation
 
-### 1) Distributional fidelity and planning quality
+### Distributional + Planning Metrics
 
 ```bash
 python evaluate_generated_plans.py \
@@ -97,9 +127,7 @@ python evaluate_generated_plans.py \
   --save_all
 ```
 
-This evaluates generated plans using the distributional metrics and six planning-quality dimensions described above.
-
-### 2) Uncertainty-aware LLM evaluation
+### LLM Evaluation
 
 ```bash
 python robust_llm_evaluator.py \
@@ -112,7 +140,5 @@ python robust_llm_evaluator.py \
   --output ./result/llm_evaluation/gemini25pro_uncertainty.json \
   --verbose
 ```
-
-This samples generated plans, evaluates each plan repeatedly, and aggregates dimension-level semantic scores, confidence values, and inter-run uncertainty.
 
 
