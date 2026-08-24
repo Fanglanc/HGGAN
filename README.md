@@ -16,7 +16,7 @@ HGGAN addresses these limitations through:
 - **Multi-objective training** integrating local, global, structural, and adversarial supervision
 - **Comprehensive evaluation protocol** combining distributional metrics, interpretable planning indicators, and uncertainty-aware LLM assessment
 
-## Main Ideas
+## Main Components
 
 ### 1. Graph-native conditional urban planning
 The target region is represented as a grid graph, where each cell is a node and node features represent POI composition. This lets the model explicitly capture non-local relationships through message passing instead of relying only on local convolutional texture.
