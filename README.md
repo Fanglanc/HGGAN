@@ -1,8 +1,8 @@
 # HGGAN: A Hierarchical Graph Generative Adversarial Framework for Urban Land Use Planning
 
-This anonymous repository contains the code for **HGGAN**, a hierarchical graph generative adversarial framework for conditional urban land use planning. HGGAN models an urban grid as a spatial graph and follows a coarse-to-fine generation pipeline: a coarse generator captures macro-scale structure, while a fine generator refines local allocation using coupled convolutional and graph-based reasoning.
+This repository contains the code for **HGGAN**, a hierarchical graph generative adversarial framework for conditional urban land use planning. HGGAN models an urban grid as a spatial graph and follows a coarse-to-fine generation pipeline: a coarse generator captures macro-scale structure, while a fine generator refines local allocation using coupled convolutional and graph-based reasoning.
 
-![HGGAN framework](./HGGAN_framework.png)
+![HGGAN framework](./HGGAN_architecture.png)
 
 ## Overview
 
@@ -104,7 +104,7 @@ python robust_llm_evaluator.py \
   --model gemini-2.5-pro \
   --generated_dir ./result/func_anchors/generated \
   --n_sample 30 \
-  --n_runs 5 \
+  --n_runs 10 \
   --temperature 0.7 \
   --output ./result/llm_evaluation/gemini25pro_uncertainty.json \
   --verbose
