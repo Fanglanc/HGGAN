@@ -13,6 +13,7 @@ HGGAN addresses these limitations through:
 - **Region graph formulation** of urban land use configuration
 - **Hierarchical coarse-to-fine generation** for macro-scale structure and detailed allocation
 - **Dual-stream fine refinement** for local spatial regularity and long-range functional dependencies
+- **Multi-objective training** integrating local, global, structural, and adversarial supervision
 - **Comprehensive evaluation protocol** combining distributional metrics, interpretable planning indicators, and uncertainty-aware LLM assessment
 
 ## Main Ideas
